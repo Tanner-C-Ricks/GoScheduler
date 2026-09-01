@@ -1,0 +1,7 @@
+{{define "loggedIn"}}
+
+<div class="">Hi <div class="" hx-get="/account/accountInfo/" hx-trigger="load">{{.Name}}</div></div>
+<button hx-post="/account/logout/" target="#body">Logout</button>
+<button hx-post="/account/delete/" target="#body">Delete</button>
+
+{{end}}

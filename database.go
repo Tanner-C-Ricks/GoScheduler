@@ -1,49 +1,52 @@
 package main
 
 import (
-	"database/sql",
+	// "math/rand"
 	"net/http"
-	_ "github.com/mattn/go-sqlite3",
+	"strconv"
 )
 
-var DATABASES = []string {
-	"ACCOUNTS": Account,
-}
+var sessions = map[string]int{}
 
-var Database struct {
-	Name string
-	ColumnNames []string
+type Database struct {
+	Name          string
+	ColumnNames   []string
+	FileURL       string
 	CreationQuery string
 }
 
-type Account struct {
-	ID int
-	Username string
-	Password string
-	Name string
+func addCookie(user Account, w http.ResponseWriter, r *http.Request) {
+	session_id := "super_secret" + strconv.Itoa(user.ID)
+	sessions[session_id] = user.ID
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    session_id,
+		Path:     "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	})
 }
 
-var COOKIES = []http.Cookie{}
-
-func writeToDatabase(database string, content struct) {
-	db, err := sql.Open("sqlite3", database)
+func removeCookie(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_id")
 	if err != nil {
-		log.Fatal(err)
-	}
-	
-	result := db.Exec(
-		"INSERT INTO users (username, password, name) VALUES (?, ?, ?)",
-		content.Username,
-		content.Password,
-		content.Name,
-	)
-
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
+		w.Header().Set("HX-Redirect", "/login")
+		w.WriteHeader(http.StatusOK)
+		return
 	}
 
-	content.ID = int(id)
+	// acc := getAccountID(sessions[cookie.Value])
 
-	defer db.Close()
+	delete(sessions, cookie.Value)
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		MaxAge:   -1,
+	})
+	return
 }
