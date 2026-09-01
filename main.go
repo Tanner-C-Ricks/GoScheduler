@@ -11,6 +11,8 @@ var STATIC_URL = "./static"
 
 var TEMPLATE_URL = STATIC_URL + "/HTML"
 
+var DATABASE_URL = "./db/"
+
 var HTML_FILES = map[string]string{
 	"BASE":        TEMPLATE_URL + "/base.html",
 	"NAVIGATION":  TEMPLATE_URL + "/navigation.html",
@@ -25,6 +27,8 @@ var HTML_FILES = map[string]string{
 	"LOGGEDIN":    TEMPLATE_URL + "/login/logged_in.html",
 	"LOGGEDOUT":   TEMPLATE_URL + "/login/logged_out.html",
 	"ACCLIST":     TEMPLATE_URL + "/fragments/account_list.html",
+
+	"TIMEBLOCK": TEMPLATE_URL + "/fragments/time_block.html",
 }
 
 func loadPage(files []string, w http.ResponseWriter, r *http.Request) {
@@ -155,6 +159,8 @@ func main() {
 	mux.HandleFunc("GET /accountlist/{$}", getAccountsHandler)
 	mux.HandleFunc("/account/schedule/{$}", schedulePage)
 	mux.HandleFunc("/account/schedule/approval/{$}", approvalPage)
+
+	mux.HandleFunc("/scheduler/newTimeBlock/", newTimeBlock)
 
 	// err := http.ListenAndServe(":4000", mux)
 	err := http.ListenAndServe(":4000", http.HandlerFunc(

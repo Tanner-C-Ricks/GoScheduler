@@ -6,6 +6,12 @@ Scheduler
 
 {{define "body"}}
 
-<div class="">This is the scheduling page</div>
+<div class="">
+    <div class="schedulerBlock">
+        <div class="scheduleGraph" id="scheduleGraph">
+            <div class="scheduleLine" hx-get="/scheduler/timeBlock/" hx-swap="beforeend" hx-trigger="click"></div>
+        </div>
+    </div>
+</div>
 
 {{end}}
