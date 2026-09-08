@@ -173,13 +173,18 @@ func accountName(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(name)
 }
 
-func accountID(w http.ResponseWriter, r *http.Request) {
+func accountID(w http.ResponseWriter, r *http.Request) int {
 	account := accountInfo(w, r)
 
 	if account.ID == -1 {
-		return
+		return -1
 	}
 	id := account.ID
+	return id
+}
+
+func renderAccountID(w http.ResponseWriter, r *http.Request) {
+	id := accountID(w, r)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(id)
 }

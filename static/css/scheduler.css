@@ -1,0 +1,75 @@
+.timeBlockHandleRight {
+    background-color: rgba(84, 84, 84, 0.534);
+    width: 10px;
+    height:100%;
+    position:absolute;
+    top:0;
+    right:0;
+    backdrop-filter: blur(10px);
+}
+
+.timeBlockHandleLeft {
+    background-color: rgba(84, 84, 84, 0.534);
+    width: 10px;
+    height:100%;
+    position:absolute;
+    top:0;
+    left:0;
+    backdrop-filter: blue(10px);
+}
+
+.scheduleLine {
+    position:relative
+}
+
+.scheduleLine {
+    background-color: blue;
+}
+
+.scheduleGraph {
+    position:relative;
+}
+
+.scheduleImg {
+    position:block;
+    width:100%;
+}
+
+.scheduleImgBlock {
+    
+    position:absolute;
+}
+
+.leftScheduleBlock {
+    position:relative;
+    
+}
+
+.rightScheduleBlock {
+    position:absolute;
+    background-color: red;
+    width:68%;
+    height: 78%;
+    inset: 0;
+    top:9%;
+    right:1%;
+    left:8%
+}
+
+.timeBlockBox {
+    position:absolute;
+    inset:0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 10fr;
+}
+
+.timeBlocks {
+    position: relative;
+    width:100%;
+    height:100%;
+}
+
+.saveBtn {
+    position: relative;
+}

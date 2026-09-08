@@ -19,7 +19,7 @@ var HTML_FILES = map[string]string{
 	"HOME":        TEMPLATE_URL + "/home.html",
 	"ACCOUNT":     TEMPLATE_URL + "/account.html",
 	"ACCOUNTINFO": TEMPLATE_URL + "/login/account_info.html",
-	"SCHEDULER":   TEMPLATE_URL + "/scheduler.html",
+	"SCHEDULE":    TEMPLATE_URL + "/scheduler.html",
 	"APPROVAL":    TEMPLATE_URL + "/approval.html",
 	"SIGNUP":      TEMPLATE_URL + "/login/signup.html",
 	"LOGIN":       TEMPLATE_URL + "/login/login.html",
@@ -28,7 +28,9 @@ var HTML_FILES = map[string]string{
 	"LOGGEDOUT":   TEMPLATE_URL + "/login/logged_out.html",
 	"ACCLIST":     TEMPLATE_URL + "/fragments/account_list.html",
 
-	"TIMEBLOCK": TEMPLATE_URL + "/fragments/time_block.html",
+	"TIMEBLOCK":       TEMPLATE_URL + "/fragments/time_block.html",
+	"SAVEDTIMEBLOCK":  TEMPLATE_URL + "/fragments/time_block_saved.html",
+	"SCHEDULEREDITOR": TEMPLATE_URL + "/scheduleEditor.html",
 }
 
 func loadPage(files []string, w http.ResponseWriter, r *http.Request) {
@@ -85,7 +87,22 @@ func schedulePage(w http.ResponseWriter, r *http.Request) {
 			HTML_FILES["BASE"],
 			HTML_FILES["NAVIGATION"],
 			HTML_FILES[loggedIn],
-			HTML_FILES["SCHEDULER"],
+			HTML_FILES["SCHEDULE"],
+		}
+
+	loadPage(files, w, r)
+	// w.Write([]byte("Schedule Page"))
+}
+
+func scheduleEditorPage(w http.ResponseWriter, r *http.Request) {
+	loggedIn := checkLoggedIn(w, r)
+
+	files :=
+		[]string{
+			HTML_FILES["BASE"],
+			HTML_FILES["NAVIGATION"],
+			HTML_FILES[loggedIn],
+			HTML_FILES["SCHEDULEREDITOR"],
 		}
 
 	loadPage(files, w, r)
@@ -157,10 +174,15 @@ func main() {
 	mux.HandleFunc("POST /account/delete/", deleteAccountHandler)
 	mux.HandleFunc("GET /account/accountInfo/", accountName)
 	mux.HandleFunc("GET /accountlist/{$}", getAccountsHandler)
-	mux.HandleFunc("/account/schedule/{$}", schedulePage)
+	mux.HandleFunc("GET /account/schedule/{$}", schedulePage)
 	mux.HandleFunc("/account/schedule/approval/{$}", approvalPage)
 
-	mux.HandleFunc("/scheduler/newTimeBlock/", newTimeBlock)
+	mux.HandleFunc("GET /account/schedule/newTimeBlock/{$}", newTimeBlock)
+	mux.HandleFunc("POST /account/schedule/updateBlock/{$}", updateTimeBlock)
+	mux.HandleFunc("GET /account/schedule/loadTimeBlocks/{$}", loadTimeBlocksHandler)
+	mux.HandleFunc("GET /account/schedule/loadTimeBlocksEdit/{$}", loadTimeBlocksEditHandler)
+
+	mux.HandleFunc("GET /account/schedule/editor/{$}", scheduleEditorPage)
 
 	// err := http.ListenAndServe(":4000", mux)
 	err := http.ListenAndServe(":4000", http.HandlerFunc(

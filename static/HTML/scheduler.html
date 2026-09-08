@@ -4,14 +4,112 @@ Scheduler
 
 {{end}}
 
+{{ block "imports" .}}
+
+<link rel="stylesheet" href="/static/css/scheduler.css">
+
+
+{{end}}
+
 {{define "body"}}
 
 <div class="">
+    <script src="/static/js/scheduler.js"></script>
+
     <div class="schedulerBlock">
-        <div class="scheduleGraph" id="scheduleGraph">
-            <div class="scheduleLine" hx-get="/scheduler/timeBlock/" hx-swap="beforeend" hx-trigger="click"></div>
+        <div class="scheduleGraph" id="">
+            <div class="scheduleLine" hx-get="/account/schedule/newTimeBlock/" hx-target="#scheduleGraph" hx-swap="beforeend" hx-trigger="click">
+                <button>+</button>
+            </div>
+            <div class="scheduleLine" hx-get="/account/schedule/loadTimeBlocksEdit/" hx-target="#scheduleGraph" hx-swap="beforeend" hx-trigger="load"></div>
+
+            <div class="">
+                <div class="scheduleImgBlock" id="scheduleImg">
+                    <img class="scheduleImg" src="/static/Images/ScheduleImg3.png" alt="ScheduleImg">
+                    <div class="timeBlockBox" id="">
+                        <div class="leftScheduleBlock">aaa</div>
+                        <div class="timeBlocks">
+                            <div class="rightScheduleBlock" id="scheduleGraph"></div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="">
+            <button id="saveBtn" class="saveBtn btn">Save</button>
+            <script>
+                {
+                function saveSchedule() {
+                    console.log("save clicked")
+                    let blocks = document.querySelectorAll(".timeBlock");
+                    const data = []
+
+                    blocks.forEach((block) => {
+                        let blockID = parseInt(block.id.substring("timeBlock".length));
+                        let dayOfWeek = window.DAYS_OF_WEEK[Math.round(parseFloat(getComputedStyle(block).top)/window.dayDistance)];
+                        console.log(`${(parseFloat(getComputedStyle(block).top)/window.dayDistance)}`);
+
+                        let startTimeHS = Math.round((((parseFloat(getComputedStyle(block).left))/window.incrementDistance * window.increments/60) + 8)*60)/60.0;
+                        let startTimeMin = Math.round((startTimeHS - Math.floor(startTimeHS))*60);
+                        console.log("StartTime hours:", startTimeMin);
+                        startTimeHS = Math.floor(startTimeHS);
+
+                        let endTimeHS = Math.round((((parseFloat(getComputedStyle(block).left) + block.offsetWidth)/window.incrementDistance * window.increments/60) + 8)*60)/60.0;
+                        let eT = (((parseFloat(getComputedStyle(block).left) + block.offsetWidth)/window.incrementDistance * window.increments/60) + 8);
+                            console.log("startTime:", ((parseFloat(getComputedStyle(block).left)/window.incrementDistance * window.increments/60) + 8), "endTime", eT);
+                        let endTimeMin = Math.round((endTimeHS - Math.floor(endTimeHS))*60);
+                        endTimeHS = Math.floor(endTimeHS);
+
+                        let left = parseInt(block.style.left);
+                        let durationHs = Math.round(((endTimeHS - startTimeHS)*60 + (endTimeMin - startTimeMin)))/60.0;
+                        let durationMin = Math.round((durationHs - parseFloat(Math.floor(durationHs))));
+                        console.log("This is the duration: ",durationHs, "durationMin: ", durationMin, "endTime:", endTimeHS, "startTime:", startTimeHS, "endMin:", endTimeMin, "startmin:", startTimeMin);
+                        durationHs = Math.floor(durationHs)
+
+                        data.push({
+                            blockID: blockID,
+                            dayOfWeek: dayOfWeek,
+                            startTime: `${startTimeHS}:${startTimeMin}`,
+                            endTime: `${endTimeHS}:${endTimeMin}`,
+                            left: left,
+                            duration: `${durationHs}:${durationMin}`,
+                        });
+                        console.log(data)
+                        
+                    });
+                    fetch("/account/schedule/updateBlock/", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body:JSON.stringify(data)
+                        }).then(response => {
+                        console.log("Response:", response.status);
+                        }  )
+                        .catch(error => {
+                            console.error("POST failed:", error);
+                        });
+
+                    
+
+                }
+                console.log(window.setUp)
+                window.setUp();
+                // console.log("Setup complete");
+
+                // function saveSchedule(){
+                //     console.log("Days:", window.DAYS_OF_WEEK)
+                // }
+            
+                let saveBtn = document.getElementById("saveBtn");
+                saveBtn.addEventListener("click", saveSchedule);
+            }
+            
+            </script>
         </div>
     </div>
+    dafasf
 </div>
 
 {{end}}
