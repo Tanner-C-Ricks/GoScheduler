@@ -16,6 +16,7 @@ var ACCOUNTS = Database{
 		"accUsername",
 		"accPassword",
 		"accName",
+		"admin",
 	},
 	FileURL: "./db/accounts.db",
 	CreationQuery: `
@@ -23,7 +24,8 @@ var ACCOUNTS = Database{
 	accID INTEGER PRIMARY KEY AUTOINCREMENT,
 	accUsername TEXT UNIQUE,
 	accPassword TEXT,
-	accName TEXT
+	accName TEXT,
+	admin BOOLEAN DEFAULT False
 	);
 	`,
 }
@@ -33,9 +35,10 @@ type Account struct {
 	Username string
 	Password string
 	Name     string
+	Admin    bool
 }
 
-func createAccount(content Account) any {
+func createAccount(content Account, w http.ResponseWriter, r *http.Request) any {
 	db, err := sql.Open("sqlite", ACCOUNTS.FileURL)
 	if err != nil {
 		fmt.Println("In the first one")
@@ -63,13 +66,56 @@ func createAccount(content Account) any {
 
 	id, err := result.LastInsertId()
 	if err != nil {
-		fmt.Println("In the third one")
+		fmt.Println("Error in retrieving the new account's ID")
 
 		return err
 	}
 
 	content.ID = int(id)
 	defer db.Close()
+	signupLogin(content, w, r)
+	createSchedule(w, r)
+	return nil
+}
+
+func createAdminAccount(content Account, w http.ResponseWriter, r *http.Request) any {
+	db, err := sql.Open("sqlite", ACCOUNTS.FileURL)
+	if err != nil {
+		fmt.Println("In the first one")
+		return err
+	}
+
+	_, tableCreationErr := db.Exec(ACCOUNTS.CreationQuery)
+	if tableCreationErr != nil {
+		return tableCreationErr
+	}
+	fmt.Printf("In the second one, %d", string(ACCOUNTS.FileURL))
+
+	result, err := db.Exec(
+		"INSERT INTO Accounts (accUsername, accPassword, accName, admin) VALUES (?, ?, ?, ?)",
+		content.Username,
+		content.Password,
+		content.Name,
+		content.Admin,
+	)
+
+	if err != nil {
+		fmt.Printf("In the second one, %d", ACCOUNTS.FileURL)
+
+		return err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		fmt.Println("Error in retrieving the new account's ID")
+
+		return err
+	}
+
+	content.ID = int(id)
+	defer db.Close()
+	signupLogin(content, w, r)
+	createSchedule(w, r)
 	return nil
 }
 
@@ -91,7 +137,7 @@ func getAccount(acc Account) Account {
 		fmt.Println(err)
 	}
 	for result.Next() {
-		err = result.Scan(&account.ID, &account.Username, &account.Password, &account.Name)
+		err = result.Scan(&account.ID, &account.Username, &account.Password, &account.Name, &account.Admin)
 
 		if err != nil {
 			fmt.Println(err)
@@ -129,7 +175,7 @@ func getAccountID(id int) Account {
 		fmt.Println(err)
 	}
 	for result.Next() {
-		err = result.Scan(&account.ID, &account.Username, &account.Password, &account.Name)
+		err = result.Scan(&account.ID, &account.Username, &account.Password, &account.Name, &account.Admin)
 
 		if err != nil {
 			fmt.Println(err)
@@ -212,7 +258,7 @@ func getAccounts() []Account {
 
 	for result.Next() {
 		var acc Account
-		err := result.Scan(&acc.ID, &acc.Username, &acc.Password, &acc.Name)
+		err := result.Scan(&acc.ID, &acc.Username, &acc.Password, &acc.Name, &acc.Admin)
 		if err != nil {
 			fmt.Println(err)
 			return accounts

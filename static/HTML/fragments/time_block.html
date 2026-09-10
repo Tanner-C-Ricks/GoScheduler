@@ -1,8 +1,12 @@
 {{range .}}
 
 <div class="timeBlock{{.BlockID}} timeBlock" id="timeBlock{{.BlockID}}">
+    <div class="timeBlockHandleLeft" id="timeBlockHandleLeft{{.BlockID}}"></div>
+    <div class="duration" id="duration{{.BlockID}}">{{.Duration}}</div>
+    <div class="timeBlockHandleRight" id="timeBlockHandleRight{{.BlockID}}"></div>
+</div>
+<div class="" id="timeBlockData">
     <script src="/static/js/scheduler.js"></script>
-    {{.BlockID}}
     <style>
         .timeBlock{{.BlockID}} {
             position:absolute;
@@ -11,9 +15,13 @@
             height:60px;
             background-color:blue;
             top:0px;
+            color:white;
+            display:flex;
+            justify-content:center;
         }
+        
     </style>
-    <div class="timeBlockHandleLeft" id="timeBlockHandleLeft{{.BlockID}}">
+    <div class="timeBlockHandleLeftInfo" id="timeBlockHandleLeftInfo">
         <script>
             {
         // const schedule = document.getElementById("scheduleGraph")
@@ -39,12 +47,16 @@
                 let newWidth = startingWidth - distanceMoved;
                 // let newLeft = Math.floor((startingLeft + distanceMoved)/incrementDistance)*incrementDistance;
                 if (newWidth < window.blockMin){
-                    let extraTravel = window.blockMin - newWidth;
+                    // let extraTravel = window.blockMin - newWidth;
                     newWidth = window.blockMin;
 
                 } else if (newWidth > window.blockMax){
                     newWidth = window.blockMax;
-                }
+                } else if (Math.round(newWidth + getComputedStyle(block).left/window.incrementDistance*window.increments/60)>window.endHour){
+                    newWidth = window.endHour/window.increments*window.incrementDistance;
+                }// else if (Math.round((event.clientX)/window.incrementDistance*window.increments/60) < window.startHour){
+                //     distanceMoved = 0;
+                // }
 
                 let actualChange = startingWidth - newWidth
 
@@ -52,10 +64,113 @@
                 block.style.left = `${newLeft}px`;
                 block.style.width = `${newWidth}px`;
 
-            }
+                let data = [];
+
+                let blockID = parseInt(block.id.substring("timeBlock".length));
+                let dayOfWeek = window.DAYS_OF_WEEK[Math.round(parseFloat(getComputedStyle(block).top)/window.dayDistance)];
+                console.log(`${(parseFloat(getComputedStyle(block).top)/window.dayDistance)}`);
+
+                let startTimeHS = Math.round((((parseFloat(getComputedStyle(block).left))/window.incrementDistance * window.increments/60) + 8)*60)/60.0;
+                let startTimeMin = Math.round((startTimeHS - Math.floor(startTimeHS))*60);
+                console.log("StartTime hours:", startTimeMin);
+                startTimeHS = Math.floor(startTimeHS);
+
+                let endTimeHS = Math.round((((parseFloat(getComputedStyle(block).left) + block.offsetWidth)/window.incrementDistance * window.increments/60) + 8)*60)/60.0;
+                let eT = (((parseFloat(getComputedStyle(block).left) + block.offsetWidth)/window.incrementDistance * window.increments/60) + 8);
+                    console.log("startTime:", ((parseFloat(getComputedStyle(block).left)/window.incrementDistance * window.increments/60) + 8), "endTime", eT);
+                let endTimeMin = Math.round((endTimeHS - Math.floor(endTimeHS))*60);
+                endTimeHS = Math.floor(endTimeHS);
+
+                let left = parseInt(block.style.left);
+                let durationHs = Math.round(((endTimeHS - startTimeHS)*60 + (endTimeMin - startTimeMin)))/60.0;
+                let durationMin = Math.round((durationHs - Math.floor(durationHs))*60);
+                console.log("This is the duration: ",durationHs, "durationMin: ", durationMin, "endTime:", endTimeHS, "startTime:", startTimeHS, "endMin:", endTimeMin, "startmin:", startTimeMin);
+                durationHs = Math.floor(durationHs)
+
+                document.getElementById("duration{{.BlockID}}").innerHTML = durationHs + ":"+ durationMin;
+
+
+                data.push({
+                    blockID: blockID,
+                    dayOfWeek: dayOfWeek,
+                    startTime: `${startTimeHS}:${startTimeMin}`,
+                    endTime: `${endTimeHS}:${endTimeMin}`,
+                    left: left,
+                    duration: `${durationHs}:${durationMin}`,
+                });
+                console.log(data);
+                // window.location.href= "/account/";
+                
+                fetch("/account/schedule/updateBlock/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body:JSON.stringify(data)
+                    }).then(response => {
+                    console.log("Response:", response.status);
+                    }  )
+                    .catch(error => {
+                        console.error("POST failed:", error);
+                    });
+
+                    window.getTotalTime();
+
+
+                }
             function stopResize() {
                 document.removeEventListener("pointermove", resize);
                 document.removeEventListener("pointerup", stopResize)
+
+                let data = [];
+
+                let blockID = parseInt(block.id.substring("timeBlock".length));
+                let dayOfWeek = window.DAYS_OF_WEEK[Math.round(parseFloat(getComputedStyle(block).top)/window.dayDistance)];
+                console.log(`${(parseFloat(getComputedStyle(block).top)/window.dayDistance)}`);
+
+                let startTimeHS = Math.round((((parseFloat(getComputedStyle(block).left))/window.incrementDistance * window.increments/60) + 8)*60)/60.0;
+                let startTimeMin = Math.round((startTimeHS - Math.floor(startTimeHS))*60);
+                console.log("StartTime hours:", startTimeMin);
+                startTimeHS = Math.floor(startTimeHS);
+
+                let endTimeHS = Math.round((((parseFloat(getComputedStyle(block).left) + block.offsetWidth)/window.incrementDistance * window.increments/60) + 8)*60)/60.0;
+                let eT = (((parseFloat(getComputedStyle(block).left) + block.offsetWidth)/window.incrementDistance * window.increments/60) + 8);
+                    console.log("startTime:", ((parseFloat(getComputedStyle(block).left)/window.incrementDistance * window.increments/60) + 8), "endTime", eT);
+                let endTimeMin = Math.round((endTimeHS - Math.floor(endTimeHS))*60);
+                endTimeHS = Math.floor(endTimeHS);
+
+                let left = parseInt(block.style.left);
+                let durationHs = Math.round(((endTimeHS - startTimeHS)*60 + (endTimeMin - startTimeMin)))/60.0;
+                let durationMin = Math.round((durationHs - Math.floor(durationHs))*60);
+                console.log("This is the duration: ",durationHs, "durationMin: ", durationMin, "endTime:", endTimeHS, "startTime:", startTimeHS, "endMin:", endTimeMin, "startmin:", startTimeMin);
+                durationHs = Math.floor(durationHs)
+
+                document.getElementById("duration{{.BlockID}}").innerHTML = durationHs + ":" + durationMin;
+
+
+                data.push({
+                    blockID: blockID,
+                    dayOfWeek: dayOfWeek,
+                    startTime: `${startTimeHS}:${startTimeMin}`,
+                    endTime: `${endTimeHS}:${endTimeMin}`,
+                    left: left,
+                    duration: `${durationHs}:${durationMin}`,
+                });
+                console.log(data);
+                // window.location.href= "/account/";
+                
+            fetch("/account/schedule/updateBlock/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body:JSON.stringify(data)
+                }).then(response => {
+                console.log("Response:", response.status);
+                }  )
+                .catch(error => {
+                    console.error("POST failed:", error);
+                });
             }
 
             document.addEventListener("pointermove", resize);
@@ -64,7 +179,7 @@
     }
     </script>
     </div>
-    <div class="timeBlockHandleRight" id="timeBlockHandleRight{{.BlockID}}">
+    <div class="timeBlockHandleRightInfo" id="timeBlockHandleRightInfo">
         <script>
             {
         let blockHandleRight = document.getElementById("timeBlockHandleRight{{.BlockID}}");
@@ -82,16 +197,76 @@
 
                 } else if (newWidth > window.blockMax){
                     newWidth = window.blockMax
-                }
+                 } //else if (Math.round(newWidth + getComputedStyle(block).left/window.incrementDistance*window.increments/60)>window.endHour){
+                //     newWidth = window.endHour/window.increments*window.incrementDistance;
+                // } else if (Math.round((event.clientX)/window.incrementDistance*window.increments/60) < window.startHour){
+                //     newWidth = window.startHour/window.increments*window.incrementDistance;
+                // }
                 block.style.width = `${newWidth}px`;
+                
+
+                window.getTotalTime();
+
             }
             function stopResize() {
                 document.removeEventListener("pointermove", resize);
                 document.removeEventListener("pointerup", stopResize)
+
+                let data=[];
+
+                let blockID = parseInt(block.id.substring("timeBlock".length));
+                let dayOfWeek = window.DAYS_OF_WEEK[Math.round(parseFloat(getComputedStyle(block).top)/window.dayDistance)];
+                console.log(`${(parseFloat(getComputedStyle(block).top)/window.dayDistance)}`);
+
+                let startTimeHS = Math.round((((parseFloat(getComputedStyle(block).left))/window.incrementDistance * window.increments/60) + 8)*60)/60.0;
+                let startTimeMin = Math.round((startTimeHS - Math.floor(startTimeHS))*60);
+                console.log("StartTime hours:", startTimeMin);
+                startTimeHS = Math.floor(startTimeHS);
+
+                let endTimeHS = Math.round((((parseFloat(getComputedStyle(block).left) + block.offsetWidth)/window.incrementDistance * window.increments/60) + 8)*60)/60.0;
+                let eT = (((parseFloat(getComputedStyle(block).left) + block.offsetWidth)/window.incrementDistance * window.increments/60) + 8);
+                    console.log("startTime:", ((parseFloat(getComputedStyle(block).left)/window.incrementDistance * window.increments/60) + 8), "endTime", eT);
+                let endTimeMin = Math.round((endTimeHS - Math.floor(endTimeHS))*60);
+                endTimeHS = Math.floor(endTimeHS);
+
+                let left = parseInt(block.style.left);
+                let durationHs = Math.round(((endTimeHS - startTimeHS)*60 + (endTimeMin - startTimeMin)))/60.0;
+                let durationMin = Math.round((durationHs - Math.floor(durationHs))*60);
+                console.log("This is the duration: ",durationHs, "durationMin: ", durationMin, "endTime:", endTimeHS, "startTime:", startTimeHS, "endMin:", endTimeMin, "startmin:", startTimeMin);
+                durationHs = Math.floor(durationHs)
+
+                document.getElementById("duration{{.BlockID}}").innerHTML = durationHs + ":"+ durationMin;
+
+                data.push({
+                    blockID: blockID,
+                    dayOfWeek: dayOfWeek,
+                    startTime: `${startTimeHS}:${startTimeMin}`,
+                    endTime: `${endTimeHS}:${endTimeMin}`,
+                    left: left,
+                    duration: `${durationHs}:${durationMin}`,
+                });
+                console.log(data);
+                // window.location.href= "/account/";
+                
+            fetch("/account/schedule/updateBlock/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body:JSON.stringify(data)
+                }).then(response => {
+                console.log("Response:", response.status);
+                }  )
+                .catch(error => {
+                    console.error("POST failed:", error);
+                });
             }
 
             document.addEventListener("pointermove", resize);
             document.addEventListener("pointerup", stopResize);
+
+            window.getTotalTime();
+
         });
     }
     </script>
@@ -134,6 +309,8 @@
 
             document.addEventListener("pointermove", relocate);
             document.addEventListener("pointerup", stopRelocate);
+            window.getTotalTime();
+
             })
         }
     </script>

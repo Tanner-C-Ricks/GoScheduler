@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 var STATIC_URL = "./static"
@@ -22,6 +23,7 @@ var HTML_FILES = map[string]string{
 	"SCHEDULE":    TEMPLATE_URL + "/scheduler.html",
 	"APPROVAL":    TEMPLATE_URL + "/approval.html",
 	"SIGNUP":      TEMPLATE_URL + "/login/signup.html",
+	"SIGNUPADMIN": TEMPLATE_URL + "/login/signup_admin.html",
 	"LOGIN":       TEMPLATE_URL + "/login/login.html",
 	"LOGOUT":      TEMPLATE_URL + "/login/logout.html",
 	"LOGGEDIN":    TEMPLATE_URL + "/login/logged_in.html",
@@ -31,6 +33,10 @@ var HTML_FILES = map[string]string{
 	"TIMEBLOCK":       TEMPLATE_URL + "/fragments/time_block.html",
 	"SAVEDTIMEBLOCK":  TEMPLATE_URL + "/fragments/time_block_saved.html",
 	"SCHEDULEREDITOR": TEMPLATE_URL + "/scheduleEditor.html",
+
+	"APPROVALLIST":   TEMPLATE_URL + "/fragments/approval_list.html",
+	"APPROVALSTATUS": TEMPLATE_URL + "/fragments/approval_status.html",
+	"NOTE":           TEMPLATE_URL + "/fragments/note.html",
 }
 
 func loadPage(files []string, w http.ResponseWriter, r *http.Request) {
@@ -81,6 +87,37 @@ func accountPage(w http.ResponseWriter, r *http.Request) {
 
 func schedulePage(w http.ResponseWriter, r *http.Request) {
 	loggedIn := checkLoggedIn(w, r)
+	if loggedIn != "LOGGEDIN" {
+		// w.Header().Set("HX-Redirect", "/account/login/")
+		// w.WriteHeader(http.StatusOK)
+		loginPage(w, r)
+		fmt.Println("The user is not logged in.")
+
+		return
+	}
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Println("There was an error with the form", err)
+		accountPage(w, r)
+		return
+	}
+	id, err := strconv.Atoi(r.FormValue("ScheduleID"))
+
+	if err != nil {
+		fmt.Println("There is an error with the value sent", err)
+		accountPage(w, r)
+		return
+	}
+
+	sched := getScheduleFromSchedID(id)
+
+	if !checkAdmin(w, r) && accountInfo(w, r).ID != sched.AccountID {
+		// w.Header().Set("HX-Redirect", "/account/")
+		// w.WriteHeader(http.StatusUnauthorized)
+		accountPage(w, r)
+		fmt.Println("The user is authorized to see schedule")
+		return
+	}
 
 	files :=
 		[]string{
@@ -90,12 +127,57 @@ func schedulePage(w http.ResponseWriter, r *http.Request) {
 			HTML_FILES["SCHEDULE"],
 		}
 
-	loadPage(files, w, r)
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		log.Print(err.Error())
+		fmt.Println(fmt.Sprintf("There is no file found for path \"%v\"", files))
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+
+	err = ts.ExecuteTemplate(w, "base", sched)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+	return
 	// w.Write([]byte("Schedule Page"))
 }
 
 func scheduleEditorPage(w http.ResponseWriter, r *http.Request) {
 	loggedIn := checkLoggedIn(w, r)
+	if loggedIn != "LOGGEDIN" {
+		// w.Header().Set("HX-Redirect", "/account/login/")
+		// w.WriteHeader(http.StatusOK)
+		loginPage(w, r)
+		fmt.Println("The user is not logged in.")
+
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Println("There was an error with the form", err)
+		accountPage(w, r)
+		return
+	}
+	id, err := strconv.Atoi(r.FormValue("ScheduleID"))
+
+	if err != nil {
+		fmt.Println("There is an error with the value sent", err)
+		accountPage(w, r)
+		return
+	}
+
+	sched := getScheduleFromSchedID(id)
+	fmt.Println(id)
+
+	if !checkAdmin(w, r) && accountInfo(w, r).ID != sched.AccountID {
+		// w.Header().Set("HX-Redirect", "/account/")
+		// w.WriteHeader(http.StatusUnauthorized)
+		accountPage(w, r)
+		fmt.Println("The user is authorized to see schedule")
+		return
+	}
 
 	files :=
 		[]string{
@@ -105,7 +187,19 @@ func scheduleEditorPage(w http.ResponseWriter, r *http.Request) {
 			HTML_FILES["SCHEDULEREDITOR"],
 		}
 
-	loadPage(files, w, r)
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		log.Print(err.Error())
+		fmt.Println(fmt.Sprintf("There is no file found for path \"%v\"", files))
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+
+	err = ts.ExecuteTemplate(w, "base", sched)
+	if err != nil {
+		log.Print(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+	return
 	// w.Write([]byte("Schedule Page"))
 }
 
@@ -157,6 +251,23 @@ func getAccountsHandler(w http.ResponseWriter, r *http.Request) {
 	ts.Execute(w, accounts)
 }
 
+func getApprovalsHandler(w http.ResponseWriter, r *http.Request) {
+	approvals := getApprovalsList(w, r)
+	fmt.Println("List of Approvals Petitioned")
+
+	files :=
+		[]string{
+			HTML_FILES["APPROVALLIST"],
+		}
+
+	ts, err := template.ParseFiles(files...)
+	if err != nil {
+		fmt.Println(err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+	ts.Execute(w, approvals)
+}
+
 func main() {
 	mux := http.NewServeMux()
 
@@ -169,20 +280,34 @@ func main() {
 	mux.HandleFunc("GET /account/login/{$}", loginPage)
 	mux.HandleFunc("POST /account/login/{$}", login)
 	mux.HandleFunc("GET /account/signup/", signupPage)
+	mux.HandleFunc("GET /account/signup/admin", signupAdminPage)
 	mux.HandleFunc("POST /account/signup/", signup)
+	mux.HandleFunc("POST /account/signup/admin", signupAdmin)
+
 	mux.HandleFunc("POST /account/logout/{$}", logout)
 	mux.HandleFunc("POST /account/delete/", deleteAccountHandler)
 	mux.HandleFunc("GET /account/accountInfo/", accountName)
 	mux.HandleFunc("GET /accountlist/{$}", getAccountsHandler)
-	mux.HandleFunc("GET /account/schedule/{$}", schedulePage)
-	mux.HandleFunc("/account/schedule/approval/{$}", approvalPage)
+	mux.HandleFunc("POST /account/schedule/edit/{$}", schedulePage)
+	mux.HandleFunc("POST /account/schedule/{$}", scheduleEditorPage)
 
 	mux.HandleFunc("GET /account/schedule/newTimeBlock/{$}", newTimeBlock)
 	mux.HandleFunc("POST /account/schedule/updateBlock/{$}", updateTimeBlock)
 	mux.HandleFunc("GET /account/schedule/loadTimeBlocks/{$}", loadTimeBlocksHandler)
 	mux.HandleFunc("GET /account/schedule/loadTimeBlocksEdit/{$}", loadTimeBlocksEditHandler)
+	mux.HandleFunc("GET /account/schedule/send/{$}", sendScheduleForReview)
+	mux.HandleFunc("GET /account/schedule/approval/unsubmitted/", unsubmittedSchedule)
+	mux.HandleFunc("GET /account/schedule/scheduleID/", getScheduleID)
 
 	mux.HandleFunc("GET /account/schedule/editor/{$}", scheduleEditorPage)
+	mux.HandleFunc("GET /account/schedule/status/", getApprovalStatus)
+	mux.HandleFunc("GET /account/schedule/note/", getNote)
+
+	mux.HandleFunc("GET /admin/schedules/approvals/{$}", approvalPage)
+	mux.HandleFunc("GET /admin/approvals/", getApprovalsHandler)
+	mux.HandleFunc("POST /admin/schedules/approvals/approve/", approveSchedule)
+	mux.HandleFunc("POST /admin/schedules/approvals/revision/", revisionSchedule)
+	mux.HandleFunc("POST /admin/schedules/approvals/note/{$}", updateScheduleNote)
 
 	// err := http.ListenAndServe(":4000", mux)
 	err := http.ListenAndServe(":4000", http.HandlerFunc(

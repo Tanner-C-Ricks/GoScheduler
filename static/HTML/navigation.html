@@ -1,6 +1,6 @@
 {{define "nav"}}
 
-<nav>
+<nav class="nav">
     <div class="navLeft">
         <div class="logoDiv">
             <a href="/"><img src="" alt="BYU logo"></a>
@@ -10,9 +10,8 @@
         {{template "loggedIn" .}}
     </div>
     <div class="navRight">
-        <a href="/account"><button class="btn navBtn">Account</button></a>
-        <a href="/account/schedule"><button class="btn navBtn">Schedule</button></a>
-        <a href="/account/schedule/approval"><button class="btn navBtn">Approvals</button></a>
+        <a href="/account"><button class="infoBubble navBtn">Account</button></a>
+        <a href="/admin/schedules/approvals/"><button class="infoBubble navBtn">Approvals</button></a>
     </div>
 </nav>
 

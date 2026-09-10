@@ -17,8 +17,10 @@ window.increments = 30;
 window.incrementsInDay = window.totalMinutesInDay/window.increments;
 window.incrementDistance = window.schedule.offsetWidth/window.incrementsInDay; //This would be from 8 to 6 (60 minutes to the hout) and 10 minute increments
 window.dayDistance = window.schedule.offsetHeight/(5); //5 days a week
-window.blockMin = (30/window.increments)*window.tickDistance; //this is a minimum of 30 minutes
-window.blockMax = ((60*2)/window.increments)*window.tickDistance; //this is a maximum of 2hrs
+window.blockMin = ((60*3)/window.increments)*window.incrementDistance; //this is a minimum of 30 minutes
+window.blockMax = ((60*9)/window.increments)*window.incrementDistance; //this is a maximum of 2hrs
+
+window.maxHours = 20;
 
 console.log("Schedule loaded");
             };

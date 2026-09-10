@@ -1,7 +1,58 @@
 {{define "loggedIn"}}
 
-<div class="">Hi <div class="" hx-get="/account/accountInfo/" hx-trigger="load">{{.Name}}</div></div>
-<button hx-post="/account/logout/" target="#body">Logout</button>
-<button hx-post="/account/delete/" target="#body">Delete</button>
+<div class="">Hi <div class="" hx-get="/account/accountInfo/" hx-swap="innerHTML" hx-trigger="load"></div></div>
+<button hx-post="/account/logout/" target="#body" class="navBtn infoBubble">Logout</button>
+<button hx-post="/account/delete/" target="#body" class="navBtn infoBubble">Delete</button>
+<button id="scheduleBtn" class="navBtn infoBubble">Schedule</button>
+
+<script>
+    {
+    let btn = document.getElementById("scheduleBtn")
+    console.log("In the schedule function")
+    function getSchedule() {
+
+        fetch("/account/schedule/scheduleID/", {
+            method:"GET",
+        }).then(response => {
+            console.log("Response:", response.status)
+            if (!response.ok) {
+                console.error("Request failed", response.status)
+                return
+            }
+            return response.json()
+        }).then(data => {
+            console.log("ScheduleID:", data.ScheduleID)
+
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = "/account/schedule/";
+
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "ScheduleID";
+            input.value = data.ScheduleID;
+            
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+
+            // fetch("/account/schedule/", {
+            // method:"POST",
+            // headers: {
+            //     "Content-Type":"application/json"
+            // },
+            // body:JSON.stringify({
+            //     ScheduleID:schID
+            // })
+        }).catch(error => {
+            console.error("GET failed", error)
+            return;
+        })
+        
+    }
+    btn.addEventListener("click", getSchedule)
+}
+</script>
+
 
 {{end}}

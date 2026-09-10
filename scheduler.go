@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 
 	_ "modernc.org/sqlite"
 )
@@ -14,7 +15,7 @@ var TIMEBLOCKS = Database{
 	Name: "TimeBlocks",
 	ColumnNames: []string{
 		"blockID",
-		"accountID",
+		"ScheduleID",
 		"dayOfWeek",
 		"startTime",
 		"endTime",
@@ -24,25 +25,25 @@ var TIMEBLOCKS = Database{
 	CreationQuery: `
 	CREATE TABLE IF NOT EXISTS TimeBlocks(
 	blockID INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	accountID INTEGER NOT NULL,
+	ScheduleID INTEGER NOT NULL,
 	dayOfWeek STRING NOT NULL CHECK (dayOfWeek IN ('Mon', 'Tue', 'Wed', 'Thur', 'Fri')),
 	startTime TIME(0) NOT NULL,
 	endTime TIME(0) NOT NULL,
 	left INT NOT NULL DEFAULT 0,
 	Duration string NOT NULL DEFAULT "0:30",
-	FOREIGN KEY (accountID) REFERENCES Accounts(accID)
+	FOREIGN KEY (ScheduleID) REFERENCES Schedules(ScheduleID)
 	);
 	`,
 }
 
 type TimeBlock struct {
-	BlockID   int
-	AccountID int
-	DayOfWeek string
-	StartTime string
-	EndTime   string
-	Left      int
-	Duration  string
+	BlockID    int
+	ScheduleID int
+	DayOfWeek  string
+	StartTime  string
+	EndTime    string
+	Left       int
+	Duration   string
 }
 
 func newTimeBlock(w http.ResponseWriter, r *http.Request) {
@@ -65,11 +66,11 @@ func newTimeBlock(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(tableCreationErr)
 		return
 	}
-	fmt.Printf("In the second one, %d", string(TIMEBLOCKS.FileURL))
+	fmt.Printf("About to create a new timeblock, %d", string(TIMEBLOCKS.FileURL))
 
 	result, err := db.Exec(
-		"INSERT INTO TimeBlocks (accountID, dayOfWeek, startTime, endTime, left, duration) VALUES (?, ?, ?, ?, ?, ?)",
-		tb.AccountID,
+		"INSERT INTO TimeBlocks (ScheduleID, dayOfWeek, startTime, endTime, left, duration) VALUES (?, ?, ?, ?, ?, ?)",
+		tb.ScheduleID,
 		tb.DayOfWeek,
 		tb.StartTime,
 		tb.EndTime,
@@ -124,13 +125,18 @@ func createNewTimeBlock(w http.ResponseWriter, r *http.Request) TimeBlock {
 	if loggedIn != "LOGGEDIN" {
 		return timeBlock
 	}
+	schedule := getScheduleFromAcc(w, r)
+	if schedule.ScheduleID == -1 {
+		createSchedule(w, r)
+		schedule = getScheduleFromAcc(w, r)
+	}
 	timeBlock = TimeBlock{
-		AccountID: accountID(w, r),
-		DayOfWeek: "Mon",
-		StartTime: "8:00",
-		EndTime:   "8:30",
-		Left:      0,
-		Duration:  "0:30",
+		ScheduleID: schedule.ScheduleID,
+		DayOfWeek:  "Mon",
+		StartTime:  "8:00",
+		EndTime:    "8:30",
+		Left:       0,
+		Duration:   "0:30",
 	}
 	return timeBlock
 }
@@ -182,18 +188,32 @@ func updateTimeBlock(w http.ResponseWriter, r *http.Request) {
 
 func loadTimeBlocks(w http.ResponseWriter, r *http.Request) []TimeBlock {
 	fmt.Println("Asked for all time blocks")
+
+	err := r.ParseForm()
+	if err != nil {
+		fmt.Println("There was an error with the form", err)
+		w.Header().Set("HX-Redirect", "/account/")
+		w.WriteHeader(http.StatusBadRequest)
+		return []TimeBlock{}
+	}
+	id, err := strconv.Atoi(r.FormValue("ScheduleID"))
+	fmt.Println("This is the form value: ", r.FormValue("ScheduleID"))
+
+	if err != nil {
+		fmt.Println("There is an error with the value sent", err, id)
+		w.Header().Set("HX-Redirect", "/")
+		w.WriteHeader(http.StatusBadRequest)
+		return []TimeBlock{}
+	}
+
+	sched := getScheduleFromSchedID(id)
+
 	var timeBlocks []TimeBlock
 
 	loggedIn := checkLoggedIn(w, r)
 	if loggedIn != "LOGGEDIN" {
 		return timeBlocks
 	}
-	cookie, err := r.Cookie("session_id")
-	if err != nil {
-		fmt.Print("Cookie not found")
-		return timeBlocks
-	}
-	acc := getAccountID(sessions[cookie.Value])
 
 	db, err := sql.Open("sqlite", TIMEBLOCKS.FileURL)
 	if err != nil {
@@ -203,10 +223,10 @@ func loadTimeBlocks(w http.ResponseWriter, r *http.Request) []TimeBlock {
 	}
 
 	query := `
-	SELECT * FROM TimeBlocks WHERE accountID = ?;
+	SELECT * FROM TimeBlocks WHERE scheduleID = ?;
 	`
 
-	result, err := db.Query(query, acc.ID)
+	result, err := db.Query(query, sched.ScheduleID)
 	if err != nil {
 		fmt.Println(err)
 		return timeBlocks
@@ -216,7 +236,7 @@ func loadTimeBlocks(w http.ResponseWriter, r *http.Request) []TimeBlock {
 
 	for result.Next() {
 		var timeBlock TimeBlock
-		err := result.Scan(&timeBlock.BlockID, &timeBlock.AccountID, &timeBlock.DayOfWeek, &timeBlock.StartTime, &timeBlock.EndTime, &timeBlock.Left, &timeBlock.Duration)
+		err := result.Scan(&timeBlock.BlockID, &timeBlock.ScheduleID, &timeBlock.DayOfWeek, &timeBlock.StartTime, &timeBlock.EndTime, &timeBlock.Left, &timeBlock.Duration)
 		if err != nil {
 			fmt.Println(err)
 			return timeBlocks

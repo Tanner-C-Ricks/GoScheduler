@@ -1,0 +1,12 @@
+{{range .}}
+
+<div class="">
+    {{.}}
+    <div class="approvalBtns">
+        <button hx-post="/admin/schedules/approvals/approve/" hx-vals='{"ScheduleID":{{.ScheduleID}}}' hx-trigger="click">Approve</button>
+        <button hx-post="/admin/schedules/approvals/revision/" hx-vals='{"ScheduleID":{{.ScheduleID}}}' hx-trigger="click">Needs Revision</button>
+        <form hx-post="/admin/schedules/approvals/note/" hx-vals='{"ScheduleID":{{.ScheduleID}}}'class=""><input type="text" name="Note" id=""><button type="submit">Submit</button></form>
+    </div>
+</div>
+
+{{end}}

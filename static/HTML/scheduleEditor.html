@@ -8,48 +8,62 @@ Scheduler
 
 <link rel="stylesheet" href="/static/css/scheduler.css">
 
+
 {{end}}
 
 {{define "body"}}
 
 <div class="">
+    <script src="/static/js/scheduler.js"></script>
+
     <div class="schedulerBlock">
         <div class="scheduleGraph" id="">
-            <div class="scheduleLine" hx-get="/account/schedule/loadTimeBlocks" hx-target="#scheduleGraph" hx-swap="beforeend" hx-trigger="load"></div>
+            <div class="scheduleLine" hx-get="/account/schedule/loadTimeBlocks/" hx-target="#scheduleGraph" hx-vals='{"ScheduleID": {{.ScheduleID}}}' hx-swap="beforeend" hx-trigger="load"></div>
+
             <div class="">
                 <div class="scheduleImgBlock" id="scheduleImg">
                     <img class="scheduleImg" src="/static/Images/ScheduleImg3.png" alt="ScheduleImg">
                     <div class="timeBlockBox" id="">
                         <div class="leftScheduleBlock">aaa</div>
                         <div class="timeBlocks">
-                            <div class="rightScheduleBlock" id="scheduleGraph">ddd</div>
+                            <div class="rightScheduleBlock" id="scheduleGraph"></div>
                         </div>
-                        
                     </div>
                 </div>
             </div>
         </div>
         <div class="">
-            <button id="saveBtn" class="saveBtn btn">Save</button>
-            <script>
-                const DAYS_OF_WEEK = [
-                    "Mon",
-                    "Tue",
-                    "Wed",
-                    "Thur",
-                    "Fri",
-                ]
-                const schedule = document.getElementById("scheduleGraph");
-                const increments = 10;
+            <button class="saveBtn" id="editBtn">edit</button>
+            
+<script>
+    {
+    let btn = document.getElementById("editBtn")
+    console.log("In the schedule function")
+    function getSchedule() {
 
-                const tickDistance = schedule.offsetWidth/(-(8-18) * 60/increments); //This would be from 8 to 6 (60 minutes to the hout) and 10 minute increments
-                const dayDistance = schedule.offsetHeight/(5); //5 days a week
-                const blockMin = (30/increments)*tickDistance; //this is a minimum of 30 minutes
-                const blockMax = ((60*2)/increments)*tickDistance; //this is a maximum of 2hrs
-            </script>
+            console.log("ScheduleID:", {{.ScheduleID}})
+
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = "/account/schedule/edit/";
+
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "ScheduleID";
+            input.value = {{.ScheduleID}};
+            
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        
+    }
+    btn.addEventListener("click", getSchedule)
+}
+</script>
+            <div hx-get="/account/schedule/status/" type="button" hx-trigger="load" class="saveBtn"></div>
+
         </div>
     </div>
-    dafasf
 </div>
 
 {{end}}

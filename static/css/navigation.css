@@ -1,5 +1,11 @@
-nav {
+.nav {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    position:fixed;
+    left:0;
+    right:0;
+    top:0;
+    z-index: 110;
+    background-color: rgb(54, 90, 161);
 }
