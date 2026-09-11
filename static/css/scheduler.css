@@ -1,29 +1,66 @@
 .timeBlockHandleRight {
-    background-color: rgba(84, 84, 84, 0.534);
-    width: 10px;
+    background-color: rgba(84, 84, 84, 0.3);
+    width: 20px;
     height:100%;
     position:absolute;
     top:0;
-    right:0;
-    backdrop-filter: blur(10px);
+    right:-15px;
+    backdrop-filter: blur(5px);
+    transition:border-radius 0.3s, background-color 0.3s;
+}
+
+.timeBlockHandleRight:active{
+    background-color: rgba(84, 84, 84, 0.9);
+    border-top-right-radius: 30%;
+    border-bottom-right-radius: 30%;
+
 }
 
 .timeBlockHandleLeft {
-    background-color: rgba(84, 84, 84, 0.534);
-    width: 10px;
+    background-color: rgba(84, 84, 84, 0.3);
+    width: 20px;
     height:100%;
     position:absolute;
     top:0;
-    left:0;
-    backdrop-filter: blue(10px);
+    left:-15px;
+    backdrop-filter: blue(5px);
+    transition:border-radius 0.3s, background-color 0.3s;
+
+}
+
+.timeBlockHandleLeft:active{
+    background-color: rgba(84, 84, 84, 0.9);
+    border-top-left-radius: 30%;
+    border-bottom-left-radius: 30%;
+
+}
+
+.timeBlock{
+    position:absolute;
+    background-color: rgba(0, 71, 186, 0.5);
+
+    display:flex;
+    justify-content:center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+    transition:background-color 0.5s, left 0.15s, right 0.15s, top 0.15s, width 0.15s;
+    outline:5px solid rgba(35, 35, 103, 0.2);
+    outline-offset: -5px;
+    border-radius: 5px;
+}
+
+.timeBlock:active{
+    background-color: rgba(0, 71, 186, 0.85);
+
 }
 
 .scheduleLine {
-    position:relative
+    position:relative;
 }
 
 .scheduleLine {
-    background-color: blue;
+    position:absolute;
+    
 }
 
 .scheduleGraph {
@@ -61,6 +98,9 @@
     width: 100%;
     display: grid;
     grid-template-columns: 1fr 10fr;
+    border-radius: 10px;
+    box-shadow: 5px;
+    user-select: none;
 }
 
 .timeBlocks {
@@ -79,28 +119,39 @@
 
 .duration{
     position:relative;
-    color:white;
 }
 
 .infoBubble {
     background-color: rgba(50, 50, 50, 0.627);
-    color:whitesmoke;
     width:fit-content;
+    height:10%;
     padding: 5px;
-    border-radius: 10px;
     backdrop-filter: blur(03px);
+    color:white;
+    transition:background-color 0.3s, border-radius 0.3s;
+}
+
+.infoBubbleBtn:hover{
+    background-color: rgba(0, 71, 186, 0.85);
+    border-radius: 10px;
+
+}
+
+.infoBubble{
+    border:none;
 }
 
 .scheduleInfo {
-    
+    height:100%;
 }
 
 .scheduleInfoBox {
     position:fixed;
-    top:150px;
+    top:11%;
     display: flex;
     align-items: center;
     justify-content: right;
+    gap:4px;
 }
 .note {
 

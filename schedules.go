@@ -319,7 +319,7 @@ func getApprovalsList(w http.ResponseWriter, r *http.Request) []Schedule {
 	}
 
 	query := `
-	SELECT * FROM Schedules;
+	SELECT * FROM Schedules WHERE ApprovalStatus = "PENDING";
 	`
 
 	result, err := db.Query(query)

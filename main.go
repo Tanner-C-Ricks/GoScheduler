@@ -286,7 +286,7 @@ func main() {
 
 	mux.HandleFunc("POST /account/logout/{$}", logout)
 	mux.HandleFunc("POST /account/delete/", deleteAccountHandler)
-	mux.HandleFunc("GET /account/accountInfo/", accountName)
+	mux.HandleFunc("GET /account/accountInfo/", accountInfoHandler)
 	mux.HandleFunc("GET /accountlist/{$}", getAccountsHandler)
 	mux.HandleFunc("POST /account/schedule/edit/{$}", schedulePage)
 	mux.HandleFunc("POST /account/schedule/{$}", scheduleEditorPage)

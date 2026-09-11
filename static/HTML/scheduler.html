@@ -19,7 +19,6 @@ Scheduler
     <div class="schedulerBlock">
         <div class="scheduleGraph" id="">
             <div class="scheduleLine" hx-get="/account/schedule/newTimeBlock/" hx-target="#scheduleGraph" hx-swap="beforeend" hx-trigger="click">
-                <button id="addTimeBtn">+</button>
             </div>
             <div class="scheduleLine" hx-get="/account/schedule/loadTimeBlocksEdit/" hx-target="#scheduleGraph" hx-vals='{"ScheduleID": {{.ScheduleID}}}' hx-swap="beforeend" hx-trigger="load"></div>
 
@@ -38,14 +37,16 @@ Scheduler
         </div>
         <div class="">
             <div class="scheduleInfoBox">
+            <button id="addTimeBtn" class="infoBubble infoBubbleBtn" hx-get="/account/schedule/newTimeBlock/" hx-target="#scheduleGraph" hx-swap="beforeend" hx-trigger="click">+</button>
             <button id="saveBtn" class="saveBtn infoBubble">Save</button>
             <button hx-get="/account/schedule/send/" type="button" hx-trigger="click" class="scheduleInfo infoBubble">Send For Review</button>
-            <div hx-get="/account/schedule/status/" hx-trigger="load" class="scheduleInfo scheduleStatus infoBubble"></div>
-            <div hx-get="/account/schedule/note/" hx-trigger="load" class="scheduleInfo note infoBubble"></div>
+            <div class="scheduleInfo scheduleStatus infoBubble">{{.ApprovalStatus}}</div>
+            <div class="scheduleInfo note infoBubble">Note: {{.Notes}}</div>
+            <div class="scheduleInfo infoBubble" id="durationBox"></div>
+            </div>
         </div>
 
 
-            <div class="scheduleInfo infoBubble" id="scheduleInfo durationBox"></div>
 
             <script>
                 {
@@ -140,6 +141,8 @@ Scheduler
 
                         totalDuration += duration;
 
+                        console.log(totalDuration)
+
                     });
                     totalDuration = Math.floor(totalDuration/6.0)/10;
                     console.log("Total Duration", totalDuration)
@@ -148,6 +151,9 @@ Scheduler
                     if (totalDuration > window.maxHours) {
                         // window.alert("Must be less than ", window.maxHours, "\n", totalDuration, "/", window.maxHours);
                         durationBox.style.color = "red";
+                    } else {
+                        durationBox.style.color = "white";
+
                     }
                 }
                 window.getTotalTime = getTotalTime

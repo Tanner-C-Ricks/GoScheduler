@@ -1,35 +1,24 @@
 {{range .}}
 
 <div class="timeBlock{{.BlockID}} timeBlock" id="timeBlock{{.BlockID}}">
+    <div class="duration" id="duration{{.BlockID}}">{{.Duration}}</div>
+</div>
+
+<div class="" id="timeBlockData">
     <script src="/static/js/scheduler.js"></script>
-    {{.BlockID}}
     <style>
         .timeBlock{{.BlockID}} {
-            position:absolute;
             left:{{.Left}}px;
             width:40px;
             height:60px;
-            background-color:blue;
             top:0px;
         }
+        
     </style>
-
-
     <script>
         {
-            // const DAYS_OF_WEEK = [
-            //         "Mon",
-            //         "Tue",
-            //         "Wed",
-            //         "Thur",
-            //         "Fri",
-            //     ]
-            // const schedule = document.getElementById("scheduleGraph");
-            // const increments = 10;
-
-            // const incrementDistance = schedule.offsetWidth/(-(8-18) * 60/increments); //This would be from 8 to 6 (60 minutes to the hout) and 10 minute increments
-            // const dayDistance = schedule.offsetHeight/(5); //5 days a week
             function updateSize() {
+                window.setUp()
 
             let block = document.getElementById("timeBlock{{.BlockID}}")
             block.style.height = `${window.dayDistance}px`;
@@ -43,13 +32,12 @@
             [hours, minutes] = startTimeStr.split(":").map(Number);
             block.style.left = `${(((hours-8)*60 + minutes)/window.increments)*window.incrementDistance}px`
             }
-            window.setUp();
+            window.setUp()
             updateSize()
 
-            document.addEventListener("resize", updateSize())
+            window.addEventListener("resize", updateSize)
         }
     </script>
-    </div>
 </div>
 
 {{end}}

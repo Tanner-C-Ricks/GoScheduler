@@ -18,29 +18,37 @@ Scheduler
 
     <div class="schedulerBlock">
         <div class="scheduleGraph" id="">
+            <div class="scheduleLine" hx-get="/account/schedule/newTimeBlock/" hx-target="#scheduleGraph" hx-swap="beforeend" hx-trigger="click">            </div>
             <div class="scheduleLine" hx-get="/account/schedule/loadTimeBlocks/" hx-target="#scheduleGraph" hx-vals='{"ScheduleID": {{.ScheduleID}}}' hx-swap="beforeend" hx-trigger="load"></div>
 
             <div class="">
                 <div class="scheduleImgBlock" id="scheduleImg">
                     <img class="scheduleImg" src="/static/Images/ScheduleImg3.png" alt="ScheduleImg">
                     <div class="timeBlockBox" id="">
-                        <div class="leftScheduleBlock">aaa</div>
+                        <div class="leftScheduleBlock"></div>
                         <div class="timeBlocks">
                             <div class="rightScheduleBlock" id="scheduleGraph"></div>
                         </div>
+                        
                     </div>
                 </div>
             </div>
         </div>
-        <div class="">
-            <button class="saveBtn" id="editBtn">edit</button>
-            
+            <div class="scheduleInfoBox">
+            <button id="editBtn" class="infoBubble infoBubbleBtn">Edit</button>
+            <button hx-get="/account/schedule/send/" type="button" hx-trigger="click" class="scheduleInfo infoBubble infoBubbleBtn">Send For Review</button>
+            <div class="scheduleInfo scheduleStatus infoBubble">{{.ApprovalStatus}}</div>
+            <div class="scheduleInfo note infoBubble">{{.Notes}}</div>
+
+            <div class="scheduleInfo infoBubble" id="durationBox"></div>
+            </div>
+
+
 <script>
     {
     let btn = document.getElementById("editBtn")
     console.log("In the schedule function")
     function getSchedule() {
-
             console.log("ScheduleID:", {{.ScheduleID}})
 
             const form = document.createElement("form");
@@ -60,10 +68,48 @@ Scheduler
     btn.addEventListener("click", getSchedule)
 }
 </script>
-            <div hx-get="/account/schedule/status/" type="button" hx-trigger="load" class="saveBtn"></div>
 
+            <script>
+
+            {
+
+                function getTotalTime() {
+                    console.log("Get Total called");
+                    let blocks = document.querySelectorAll(".timeBlock");
+                    let durationBox = document.getElementById("durationBox");
+                    let totalDuration = 0;
+                    console.log(blocks);
+                    blocks.forEach((block) => {
+                        let startTime = Math.round((((parseFloat(getComputedStyle(block).left))/window.incrementDistance * window.increments/60) + 8)*60);
+
+                        let endTime = Math.round((((parseFloat(getComputedStyle(block).left) + block.offsetWidth)/window.incrementDistance * window.increments/60) + 8)*60);
+                        let duration = Math.round(endTime - startTime);
+
+                        totalDuration += duration;
+
+                    });
+                    totalDuration = Math.floor(totalDuration/6.0)/10;
+                    console.log("Total Duration", totalDuration)
+
+                    durationBox.innerHTML = totalDuration;
+                    if (totalDuration > window.maxHours) {
+                        // window.alert("Must be less than ", window.maxHours, "\n", totalDuration, "/", window.maxHours);
+                        durationBox.style.color = "red";
+                    }
+                }
+                window.getTotalTime = getTotalTime
+                window.getTotalTime();
+                document.body.addEventListener("htmx:afterSwap", event => {
+                    if (event.detail.target.id === "scheduleGraph") {
+                        getTotalTime();
+                    }
+                });
+                document.body.addEventListener("change", getTotalTime)
+            }
+            </script>
         </div>
     </div>
+    dafasf
 </div>
 
 {{end}}

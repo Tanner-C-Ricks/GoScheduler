@@ -1,9 +1,15 @@
 {{define "loggedIn"}}
 
-<div class="">Hi <div class="" hx-get="/account/accountInfo/" hx-swap="innerHTML" hx-trigger="load"></div></div>
-<button hx-post="/account/logout/" target="#body" class="navBtn infoBubble">Logout</button>
-<button hx-post="/account/delete/" target="#body" class="navBtn infoBubble">Delete</button>
-<button id="scheduleBtn" class="navBtn infoBubble">Schedule</button>
+<div class="centerBox">
+    <div class="greetingBox">Welcome!</div>
+
+</div>
+<div class="centerBox">
+<button hx-post="/account/logout/" target="#body" class="navBtn">Logout</button>
+<button hx-post="/account/delete/" target="#body" class="navBtn">Delete</button>
+<button id="scheduleBtn" class="navBtn">Schedule</button>
+</div>
+
 
 <script>
     {

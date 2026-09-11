@@ -2,10 +2,47 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
     position:fixed;
     left:0;
     right:0;
     top:0;
     z-index: 110;
-    background-color: rgb(54, 90, 161);
+    background-color: rgb(0, 46, 93);
+}
+
+.navCenter{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: space-between;
+}
+.centerBox{
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.greetingBox{
+    display: flex;
+    justify-content: space-around;
+}
+
+.nameBox{
+    display:inline;
+}
+
+.navBtn:hover {
+    background-color: rgb(255, 255, 255, 0.4);
+}
+
+.navBtn {
+    background-color: rgb(255, 255, 255, 0);
+    width:fit-content;
+    padding: 5px;
+    backdrop-filter: blur(03px);
+    color:white;
+    transition:background-color 0.3s;
+    border:none;
+    height: 100%;
+
 }

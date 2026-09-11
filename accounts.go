@@ -208,15 +208,15 @@ func accountInfo(w http.ResponseWriter, r *http.Request) Account {
 	return account
 }
 
-func accountName(w http.ResponseWriter, r *http.Request) {
+func accountInfoHandler(w http.ResponseWriter, r *http.Request) {
 	account := accountInfo(w, r)
 
 	if account.ID == -1 {
 		return
 	}
-	name := account.Name
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(name)
+	fmt.Println(account)
+	json.NewEncoder(w).Encode(account)
 }
 
 func accountID(w http.ResponseWriter, r *http.Request) int {
