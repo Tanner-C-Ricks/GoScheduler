@@ -1,0 +1,38 @@
+{{range .}}
+
+<div class="">
+    {{.}}
+    <div class="approvalBtns">
+        <button hx-post="/admin/schedules/approvals/approve/" hx-vals='{"ScheduleID":{{.ScheduleID}}}' hx-trigger="click">Approve</button>
+        <button hx-post="/admin/schedules/approvals/revision/" hx-vals='{"ScheduleID":{{.ScheduleID}}}' hx-trigger="click">Needs Revision</button>
+        <button id="scheduleBtn{{.ScheduleID}}" class="navBtn infoBubble">View</button>
+        <form hx-post="/admin/schedules/approvals/note/" hx-vals='{"ScheduleID":{{.ScheduleID}}}'class=""><input type="text" name="Note" id=""><button type="submit">Submit</button></form>
+    </div>
+</div>
+
+<script>
+    {
+    let btn = document.getElementById("scheduleBtn{{.ScheduleID}}")
+    console.log("In the schedule function")
+    function getSchedule() {
+            console.log("ScheduleID:", {{.ScheduleID}})
+
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = "/account/schedule/";
+
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "ScheduleID";
+            input.value = {{.ScheduleID}};
+            
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        
+    }
+    btn.addEventListener("click", getSchedule)
+}
+</script>
+
+{{end}}

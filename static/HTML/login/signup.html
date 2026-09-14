@@ -6,8 +6,8 @@ Login
 
 {{define "body"}}
 
-<div class="">This is the Login Page</div>
-<form hx-post="/account/login/" >
+<div class="">This is the Signup Page</div>
+<form hx-post="/account/signup" >
     <div class="">
         Username: 
         <input type="text" name="username" id="">
@@ -16,10 +16,12 @@ Login
         Password:
         <input type="text" name="password" id="">
     </div>
+    <div class="">
+        Name: 
+        <input type="text" name="name" id="">
+    </div>
     
     <button type="submit">Login</button>
 </form>
-
-<a href="/account/signup/"><button>Sign-Up</button></a>
 
 {{end}}

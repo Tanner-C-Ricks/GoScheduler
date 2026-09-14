@@ -1,0 +1,43 @@
+{{range .}}
+
+<div class="timeBlock{{.BlockID}} timeBlock" id="timeBlock{{.BlockID}}">
+    <div class="duration" id="duration{{.BlockID}}">{{.Duration}}</div>
+</div>
+
+<div class="" id="timeBlockData">
+    <script src="/static/js/scheduler.js"></script>
+    <style>
+        .timeBlock{{.BlockID}} {
+            left:{{.Left}}px;
+            width:40px;
+            height:60px;
+            top:0px;
+        }
+        
+    </style>
+    <script>
+        {
+            function updateSize() {
+                window.setUp()
+
+            let block = document.getElementById("timeBlock{{.BlockID}}")
+            block.style.height = `${window.dayDistance}px`;
+            block.style.top = `${window.dayDistance * window.DAYS_OF_WEEK.indexOf("{{.DayOfWeek}}")}px`;
+            console.log("{{.DayOfWeek}}");
+            let durationStr = "{{.Duration}}";
+            let startTimeStr = "{{.StartTime}}"
+
+            let [hours, minutes] = durationStr.split(":").map(Number);
+            block.style.width = `${(((hours)*60 + minutes)/window.increments)*window.incrementDistance}px`;
+            [hours, minutes] = startTimeStr.split(":").map(Number);
+            block.style.left = `${(((hours-8)*60 + minutes)/window.increments)*window.incrementDistance}px`
+            }
+            window.setUp()
+            updateSize()
+
+            window.addEventListener("resize", updateSize)
+        }
+    </script>
+</div>
+
+{{end}}
