@@ -235,7 +235,11 @@ func approvalPage(w http.ResponseWriter, r *http.Request) {
 // }
 
 func getAccountsHandler(w http.ResponseWriter, r *http.Request) {
-	accounts := getAccounts()
+	accounts := []Account{}
+	if !checkAdmin(w, r) && checkLoggedIn(w, r) == "LOGGEDIN" {
+		accounts = getAccounts()
+	}
+
 	fmt.Println("Event handler called")
 
 	files :=
